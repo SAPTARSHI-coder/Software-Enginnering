@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockMate — Inventory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold-1: #D49B37; --gold-2: #E5AC46; --gold-3: #F8DA96; --gold-4: #F3C367;
+      --gold-dim: #B27D1B; --red-1: #992B15; --red-2: #B83A1B; --red-3: #D84D29;
+      --bg: #0A0D12; --card-1: #10151E; --card-2: #151C27; --card-3: #1D2635;
+      --text-white: #FCFAF7; --text-light: #9CA3AF; --text-muted: #6B7280;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--text-white); min-height: 100vh; overflow-x: hidden; display: flex; flex-direction: column; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--gold-1); border-radius: 99px; }
+    .dot-bg { background-color: var(--bg); background-image: radial-gradient(rgba(212,155,55,0.06) 1px, transparent 0); background-size: 24px 24px; }
+    .proto-banner { background: linear-gradient(90deg, rgba(153,43,21,0.9) 0%, rgba(180,120,20,0.9) 50%, rgba(153,43,21,0.9) 100%); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(212,155,55,0.3); font-size: 0.78rem; letter-spacing: 0.03em; }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
+    .fade-in { animation: fadeInUp 0.45s ease both; }
+    .glass-card { background: rgba(16,21,30,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(212,155,55,0.18); border-radius: 16px; }
+    /* SIDEBAR */
+    .sidebar { width: 260px; min-height: calc(100vh - 36px); background: var(--card-1); border-right: 1px solid rgba(212,155,55,0.15); display: flex; flex-direction: column; position: sticky; top: 36px; height: calc(100vh - 36px); overflow-y: auto; flex-shrink: 0; }
+    .nav-link { display: flex; align-items: center; gap: 11px; padding: 10px 16px; border-radius: 10px; margin: 2px 8px; font-size: 0.88rem; font-weight: 500; color: var(--text-light); text-decoration: none; transition: all 0.2s; cursor: pointer; }
+    .nav-link:hover { background: rgba(212,155,55,0.1); color: var(--gold-3); }
+    .nav-link.active { background: linear-gradient(135deg, rgba(212,155,55,0.22), rgba(212,155,55,0.1)); color: var(--gold-2); font-weight: 700; border: 1px solid rgba(212,155,55,0.25); }
+    /* BUTTONS */
+    .btn-gold { background: linear-gradient(135deg, var(--gold-1) 0%, var(--gold-dim) 100%); color: #0A0D12; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.85rem; border: none; border-radius: 12px; padding: 0.65rem 1.3rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; letter-spacing: 0.03em; display: flex; align-items: center; gap: 6px; }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,155,55,0.35); }
+    .btn-edit { background: transparent; border: 1px solid rgba(212,155,55,0.3); color: var(--gold-2); font-size: 0.75rem; font-weight: 600; padding: 4px 11px; border-radius: 7px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s; }
+    .btn-edit:hover { background: rgba(212,155,55,0.12); border-color: var(--gold-2); }
+    .btn-del { background: transparent; border: 1px solid rgba(248,113,113,0.3); color: #F87171; font-size: 0.75rem; font-weight: 600; padding: 4px 11px; border-radius: 7px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s; }
+    .btn-del:hover { background: rgba(248,113,113,0.1); border-color: #F87171; }
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; padding: 11px 14px; border-bottom: 1px solid rgba(212,155,55,0.12); text-align: left; white-space: nowrap; background: rgba(10,13,18,0.5); }
+    td { padding: 12px 14px; font-size: 0.83rem; color: var(--text-light); border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .table-row { transition: all 0.18s; }
+    .table-row:hover td { background: rgba(212,155,55,0.04); }
+    .table-row:hover td:first-child { box-shadow: inset 3px 0 0 var(--gold-1); }
+    /* STATUS BADGES */
+    .badge-instock { background: #0E1C15; color: #34D399; border: 1px solid rgba(52,211,153,0.3); font-size: 0.69rem; font-weight: 700; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+    .badge-lowstock { background: #1E190E; color: #FBBF24; border: 1px solid rgba(251,191,36,0.3); font-size: 0.69rem; font-weight: 700; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+    .badge-outofstock { background: #1C0A0A; color: #F87171; border: 1px solid rgba(248,113,113,0.3); font-size: 0.69rem; font-weight: 700; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+    /* FORM INPUTS */
+    .form-control { background: rgba(21,28,39,0.9); border: 1px solid rgba(212,155,55,0.2); border-radius: 9px; padding: 0.55rem 0.9rem; color: var(--text-white); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.83rem; outline: none; transition: border-color 0.25s; }
+    .form-control::placeholder { color: var(--text-muted); }
+    .form-control:focus { border-color: var(--gold-1); box-shadow: 0 0 0 3px rgba(212,155,55,0.1); }
+    select.form-control option { background: #151C27; color: #FCFAF7; }
+    /* CHECKBOX */
+    .row-check { accent-color: var(--gold-1); width: 14px; height: 14px; cursor: pointer; }
+    /* AVATAR */
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--gold-1), var(--gold-dim)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; color: #0A0D12; flex-shrink: 0; }
+    /* VERSION BADGE */
+    .version-badge { background: rgba(212,155,55,0.12); border: 1px solid rgba(212,155,55,0.25); color: var(--gold-4); font-size: 0.67rem; padding: 2px 8px; border-radius: 99px; font-weight: 600; letter-spacing: 0.06em; }
+    /* MODAL OVERLAY */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 24px; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: var(--card-2); border: 1px solid rgba(212,155,55,0.25); border-radius: 20px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; animation: fadeInUp 0.35s ease; }
+    /* BULK BAR */
+    .bulk-bar { display: none; background: rgba(212,155,55,0.1); border: 1px solid rgba(212,155,55,0.25); border-radius: 12px; padding: 10px 18px; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .bulk-bar.visible { display: flex; }
+    /* SEARCH INPUT */
+    .search-input { background: rgba(21,28,39,0.9); border: 1px solid rgba(212,155,55,0.18); border-radius: 10px; padding: 0.55rem 0.9rem 0.55rem 2.4rem; color: var(--text-white); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.83rem; outline: none; transition: border-color 0.25s; }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus { border-color: var(--gold-1); }
+  </style>
+</head>
+<body class="dot-bg">
+
+  <!-- PROTOTYPE BANNER -->
+  <div class="proto-banner" style="position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:center;gap:8px;padding:7px 16px;text-align:center;">
+    <span>⚠️</span>
+    <span style="color:#F8DA96;font-weight:500;">This is a <strong>Throwaway Prototype</strong> — UI demonstration only. No real data or backend.</span>
+  </div>
+
+  <!-- APP SHELL -->
+  <div style="display:flex;flex:1;">
+
+    <!-- ══════════════ SIDEBAR ══════════════ -->
+    <aside class="sidebar">
+      <div style="padding:20px 20px 14px;border-bottom:1px solid rgba(212,155,55,0.12);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#D49B37,#B27D1B);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A0D12" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:800;color:#FCFAF7;">StockMate</div>
+            <div style="font-size:0.65rem;color:#6B7280;letter-spacing:0.05em;">STOCK MAINTENANCE</div>
+          </div>
+        </div>
+      </div>
+      <nav style="flex:1;padding:12px 0;">
+        <div style="padding:0 12px 8px;font-size:0.65rem;color:#6B7280;letter-spacing:0.09em;font-weight:700;text-transform:uppercase;">Main Menu</div>
+        <a class="nav-link" href="dashboard.html">📊 &nbsp;Dashboard</a>
+        <a class="nav-link active" href="inventory.html">📦 &nbsp;Inventory</a>
+        <a class="nav-link" href="#">🚚 &nbsp;Suppliers</a>
+        <a class="nav-link" href="#">📋 &nbsp;Purchase Orders</a>
+        <a class="nav-link" href="#">📈 &nbsp;Reports</a>
+        <a class="nav-link" href="#" style="color:#F87171;">⚠️ &nbsp;Low Stock Alerts <span style="background:#992B15;color:#fff;font-size:0.65rem;padding:2px 7px;border-radius:99px;margin-left:auto;">23</span></a>
+        <a class="nav-link" href="#">⚙️ &nbsp;Settings</a>
+      </nav>
+      <div style="padding:14px 16px;border-top:1px solid rgba(212,155,55,0.12);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar">A</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.85rem;font-weight:600;color:#FCFAF7;">Admin User</div>
+            <div style="font-size:0.72rem;color:#6B7280;">System Administrator</div>
+          </div>
+          <div style="width:8px;height:8px;background:#34D399;border-radius:50%;flex-shrink:0;"></div>
+        </div>
+        <div style="margin-top:10px;text-align:center;">
+          <span class="version-badge">v2.0.0-proto</span>
+          <div style="font-size:0.65rem;color:#6B7280;margin-top:4px;">Week 2 — Rapid Prototype</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ══════════════ MAIN CONTENT ══════════════ -->
+    <main style="flex:1;overflow-y:auto;padding-bottom:60px;">
+
+      <!-- TOP HEADER BAR -->
+      <header style="position:sticky;top:0;z-index:100;background:rgba(10,13,18,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(212,155,55,0.12);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <h2 style="font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;color:#FCFAF7;">📦 Inventory Management</h2>
+          <p style="font-size:0.78rem;color:#6B7280;margin-top:1px;">Manage and track all your stock items</p>
+        </div>
+        <button class="btn-gold" onclick="openModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add New Item
+        </button>
+      </header>
+
+      <div style="padding:24px 28px;">
+
+        <!-- ACTION BAR -->
+        <div class="glass-card fade-in" style="padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div style="position:relative;flex:1;min-width:200px;">
+            <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:#6B7280;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" class="search-input" placeholder="Search items…" style="width:100%;" oninput="filterTable()" id="searchInput" />
+          </div>
+          <select class="form-control" onchange="filterTable()" id="catFilter" style="min-width:160px;">
+            <option value="">All Categories</option>
+            <option>Electronics</option>
+            <option>Stationery</option>
+            <option>Hardware</option>
+            <option>Furniture</option>
+            <option>Consumables</option>
+          </select>
+          <select class="form-control" onchange="filterTable()" id="statusFilter" style="min-width:150px;">
+            <option value="">All Status</option>
+            <option>In Stock</option>
+            <option>Low Stock</option>
+            <option>Out of Stock</option>
+          </select>
+        </div>
+
+        <!-- BULK ACTIONS BAR -->
+        <div class="bulk-bar" id="bulkBar">
+          <span id="bulkCount" style="font-size:0.85rem;font-weight:600;color:#F3C367;"></span>
+          <button style="background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.3);color:#F87171;font-size:0.8rem;font-weight:600;padding:5px 14px;border-radius:8px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">
+            🗑 Delete Selected
+          </button>
+          <button style="background:rgba(212,155,55,0.12);border:1px solid rgba(212,155,55,0.28);color:#F3C367;font-size:0.8rem;font-weight:600;padding:5px 14px;border-radius:8px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">
+            📤 Export CSV
+          </button>
+          <button onclick="clearSelection()" style="background:transparent;border:1px solid rgba(255,255,255,0.12);color:#9CA3AF;font-size:0.8rem;padding:5px 14px;border-radius:8px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;margin-left:auto;">
+            Clear
+          </button>
+        </div>
+
+        <!-- INVENTORY TABLE -->
+        <div class="glass-card fade-in" style="overflow:hidden;margin-bottom:18px;">
+          <div style="overflow-x:auto;">
+            <table id="inventoryTable">
+              <thead>
+                <tr>
+                  <th style="width:40px;"><input type="checkbox" class="row-check" id="selectAll" onchange="toggleAll(this)" /></th>
+                  <th>Item ID</th>
+                  <th>Item Name</th>
+                  <th>Category</th>
+                  <th>Qty</th>
+                  <th>Unit</th>
+                  <th>Reorder Lvl</th>
+                  <th>Supplier</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <!-- Rows injected by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="glass-card fade-in" style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:0.82rem;color:#9CA3AF;">Showing <strong style="color:#F3C367;">1–15</strong> of <strong style="color:#FCFAF7;">247</strong> items</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button style="background:rgba(21,28,39,0.9);border:1px solid rgba(212,155,55,0.2);color:#9CA3AF;font-size:0.82rem;font-weight:600;padding:6px 16px;border-radius:9px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;" onmouseover="this.style.borderColor='#D49B37';this.style.color='#F3C367'" onmouseout="this.style.borderColor='rgba(212,155,55,0.2)';this.style.color='#9CA3AF'">← Previous</button>
+            <div style="display:flex;gap:5px;">
+              <button style="background:linear-gradient(135deg,#D49B37,#B27D1B);border:none;color:#0A0D12;font-size:0.82rem;font-weight:700;width:32px;height:32px;border-radius:8px;cursor:pointer;">1</button>
+              <button style="background:rgba(21,28,39,0.9);border:1px solid rgba(212,155,55,0.15);color:#6B7280;font-size:0.82rem;font-weight:600;width:32px;height:32px;border-radius:8px;cursor:pointer;">2</button>
+              <button style="background:rgba(21,28,39,0.9);border:1px solid rgba(212,155,55,0.15);color:#6B7280;font-size:0.82rem;font-weight:600;width:32px;height:32px;border-radius:8px;cursor:pointer;">3</button>
+              <span style="color:#6B7280;display:flex;align-items:center;padding:0 4px;">…</span>
+              <button style="background:rgba(21,28,39,0.9);border:1px solid rgba(212,155,55,0.15);color:#6B7280;font-size:0.82rem;font-weight:600;width:32px;height:32px;border-radius:8px;cursor:pointer;">17</button>
+            </div>
+            <button style="background:rgba(21,28,39,0.9);border:1px solid rgba(212,155,55,0.2);color:#9CA3AF;font-size:0.82rem;font-weight:600;padding:6px 16px;border-radius:9px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;" onmouseover="this.style.borderColor='#D49B37';this.style.color='#F3C367'" onmouseout="this.style.borderColor='rgba(212,155,55,0.2)';this.style.color='#9CA3AF'">Next →</button>
+          </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div style="text-align:center;padding-top:18px;border-top:1px solid rgba(212,155,55,0.1);margin-top:6px;">
+          <span style="font-size:0.72rem;color:#6B7280;">Week 2 — Rapid Throwaway Prototype &nbsp;|&nbsp; StockMate v2.0.0-proto &nbsp;|&nbsp; UI Demo Only</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ══════════════ ADD NEW ITEM MODAL ══════════════ -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <!-- Modal Header -->
+      <div style="padding:22px 24px 16px;border-bottom:1px solid rgba(212,155,55,0.15);display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <h3 style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:#FCFAF7;">Add New Inventory Item</h3>
+          <p style="font-size:0.75rem;color:#6B7280;margin-top:2px;">Fill in the details below to add a new item</p>
+        </div>
+        <button onclick="closeModal()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#9CA3AF;font-size:1.1rem;transition:all 0.2s;" onmouseover="this.style.background='rgba(248,113,113,0.15)';this.style.color='#F87171'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#9CA3AF'">✕</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding:22px 24px;">
+        <form onsubmit="submitNewItem(event)">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+              <label style="font-size:0.75rem;font-weight:600;color:#9CA3AF;letter-spacing:0.05em;display:block;margin-bottom:6px;">ITEM NAME *</label>
+              <input type="text" class="form-control" placeholder="e.g. Wireless Mouse A400" style="width:100%;" required />
+            </div>
+            <div>
+              <label style="font-size:0.75rem;font-weight:600;color:#9CA3AF;letter-spacing:0.05em;display:block;margin-bottom:6px;">CATEGORY *</label>
+              <select class="form-control" style="width:100%;" required>
+                <option value="">Select category</option>
+                <option>Electronics</option>
+                <option>Stationery</option>
+                <option>Hardware</option>
+                <option>Furniture</option>
+                <option>Consumables</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+              <label style="font-size:0.75rem;font-weight:600;color:#9CA3AF;letter-spacing:0.05em;display:block;margin-bottom:6px;">QUANTITY *</label>
+              <input type="number" class="form-control" placeholder="0" min="0" style="width:100%;" required />
+            </div>
+            <div>
+              <label style="font-size:0.75rem;font-weight:600;color:#9CA3AF;letter-spacing:0.05em;display:block;margin-bottom:6px;">UNIT *</label>
+              <select class="form-control" style="width:100%;" required>
+                <option value="">Unit</option>
+                <option>pcs</option>
+                <option>box</option>
+                <option>ream</option>
+                <option>bottle</option>
+                <option>kg</option>
+                <option>litre</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:0.75rem;font-weight:600;color:#9CA3AF;letter-spacing:0.05em;display:block;margin-bottom:6px;">REORDER LEVEL *</label>
+              <input type="number" class="form-control" placeholder="10" min="0" style="width:100%;" required />
+            </div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:0.75rem;font-weight:600;color:#9CA3AF;letter-spacing:0.05em;display:block;margin-bottom:6px;">SUPPLIER</label>
+            <input type="text" class="form-control" placeholder="e.g. TechSupply Co." style="width:100%;" />
+          </div>
+          <div style="margin-bottom:22px;">
+            <label style="font-size:0.75rem;font-weight:600;color:#9CA3AF;letter-spacing:0.05em;display:block;margin-bottom:6px;">STATUS</label>
+            <select class="form-control" style="width:100%;">
+              <option>In Stock</option>
+              <option>Low Stock</option>
+              <option>Out of Stock</option>
+            </select>
+          </div>
+
+          <!-- Modal Buttons -->
+          <div style="display:flex;gap:12px;justify-content:flex-end;">
+            <button type="button" onclick="closeModal()" style="background:rgba(21,28,39,0.9);border:1px solid rgba(212,155,55,0.2);color:#9CA3AF;font-size:0.85rem;font-weight:600;padding:10px 22px;border-radius:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;" onmouseover="this.style.borderColor='#D49B37';this.style.color='#F3C367'" onmouseout="this.style.borderColor='rgba(212,155,55,0.2)';this.style.color='#9CA3AF'">
+              Cancel
+            </button>
+            <button type="submit" class="btn-gold">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Add Item
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ─── INVENTORY DATA ───────────────────────────────────
+    const inventoryData = [
+      { id:'INV001', name:'Wireless Mouse A400',    cat:'Electronics',  qty:45,  unit:'pcs',    rl:20, supplier:'TechSupply Co.',  status:'In Stock'     },
+      { id:'INV002', name:'Ballpoint Pens (Box)',   cat:'Stationery',   qty:8,   unit:'box',    rl:25, supplier:'OfficeWorld',      status:'Low Stock'    },
+      { id:'INV003', name:'USB Hub 7-Port',          cat:'Electronics',  qty:0,   unit:'pcs',    rl:10, supplier:'TechSupply Co.',  status:'Out of Stock' },
+      { id:'INV004', name:'A4 Paper Ream',           cat:'Stationery',   qty:120, unit:'ream',   rl:50, supplier:'PaperMart',       status:'In Stock'     },
+      { id:'INV005', name:'Laptop Stand Pro',        cat:'Electronics',  qty:15,  unit:'pcs',    rl:10, supplier:'ErgoDesk Ltd',    status:'In Stock'     },
+      { id:'INV006', name:'Printer Ink Cartridge',  cat:'Consumables',  qty:3,   unit:'pcs',    rl:15, supplier:'PrintZone',       status:'Low Stock'    },
+      { id:'INV007', name:'Office Chair (Ergonomic)',cat:'Furniture',    qty:7,   unit:'pcs',    rl:5,  supplier:'FurnishPro',      status:'In Stock'     },
+      { id:'INV008', name:'HDMI Cable 2m',           cat:'Electronics',  qty:0,   unit:'pcs',    rl:20, supplier:'CableWorld',      status:'Out of Stock' },
+      { id:'INV009', name:'Stapler Heavy Duty',      cat:'Stationery',   qty:22,  unit:'pcs',    rl:10, supplier:'OfficeWorld',     status:'In Stock'     },
+      { id:'INV010', name:'Extension Cord 5m',       cat:'Hardware',     qty:12,  unit:'pcs',    rl:8,  supplier:'ElectroMart',     status:'In Stock'     },
+      { id:'INV011', name:'Whiteboard Markers',      cat:'Stationery',   qty:6,   unit:'box',    rl:20, supplier:'OfficeWorld',     status:'Low Stock'    },
+      { id:'INV012', name:'Desk Lamp LED',           cat:'Electronics',  qty:30,  unit:'pcs',    rl:15, supplier:'LightHouse',      status:'In Stock'     },
+      { id:'INV013', name:'Filing Cabinet',          cat:'Furniture',    qty:2,   unit:'pcs',    rl:3,  supplier:'FurnishPro',      status:'Low Stock'    },
+      { id:'INV014', name:'Ethernet Cable 10m',      cat:'Hardware',     qty:55,  unit:'pcs',    rl:20, supplier:'CableWorld',      status:'In Stock'     },
+      { id:'INV015', name:'Hand Sanitizer 500ml',    cat:'Consumables',  qty:18,  unit:'bottle', rl:30, supplier:'CleanCo',         status:'Low Stock'    },
+    ];
+
+    function statusBadge(s) {
+      if (s === 'In Stock')     return '<span class="badge-instock">In Stock</span>';
+      if (s === 'Low Stock')    return '<span class="badge-lowstock">Low Stock</span>';
+      if (s === 'Out of Stock') return '<span class="badge-outofstock">Out of Stock</span>';
+      return s;
+    }
+
+    function renderRows(data) {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = data.map((r, i) => `
+        <tr class="table-row" data-cat="${r.cat}" data-status="${r.status}" data-name="${r.name.toLowerCase()}">
+          <td><input type="checkbox" class="row-check item-check" onchange="updateBulk()" /></td>
+          <td><span style="font-family:monospace;font-size:0.78rem;color:#6B7280;background:rgba(21,28,39,0.8);padding:2px 7px;border-radius:5px;border:1px solid rgba(212,155,55,0.12);">${r.id}</span></td>
+          <td style="color:#FCFAF7;font-weight:500;">${r.name}</td>
+          <td>
+            <span style="background:rgba(29,38,53,0.8);color:#9CA3AF;font-size:0.75rem;padding:2px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);">${r.cat}</span>
+          </td>
+          <td style="font-weight:700;color:${r.qty === 0 ? '#F87171' : r.qty <= r.rl ? '#FBBF24' : '#FCFAF7'};">${r.qty}</td>
+          <td style="color:#6B7280;">${r.unit}</td>
+          <td style="color:#6B7280;">${r.rl}</td>
+          <td style="color:#9CA3AF;font-size:0.8rem;">${r.supplier}</td>
+          <td>${statusBadge(r.status)}</td>
+          <td style="text-align:right;">
+            <div style="display:flex;gap:6px;justify-content:flex-end;">
+              <button class="btn-edit">✏ Edit</button>
+              <button class="btn-del">🗑 Del</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterTable() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const cat = document.getElementById('catFilter').value;
+      const status = document.getElementById('statusFilter').value;
+      const filtered = inventoryData.filter(r => {
+        const matchSearch = r.name.toLowerCase().includes(search) || r.id.toLowerCase().includes(search) || r.supplier.toLowerCase().includes(search);
+        const matchCat = !cat || r.cat === cat;
+        const matchStatus = !status || r.status === status;
+        return matchSearch && matchCat && matchStatus;
+      });
+      renderRows(filtered);
+    }
+
+    function toggleAll(cb) {
+      document.querySelectorAll('.item-check').forEach(c => c.checked = cb.checked);
+      updateBulk();
+    }
+
+    function updateBulk() {
+      const checked = document.querySelectorAll('.item-check:checked').length;
+      const bar = document.getElementById('bulkBar');
+      const count = document.getElementById('bulkCount');
+      if (checked > 0) {
+        bar.classList.add('visible');
+        count.textContent = `${checked} item${checked > 1 ? 's' : ''} selected`;
+      } else {
+        bar.classList.remove('visible');
+      }
+    }
+
+    function clearSelection() {
+      document.querySelectorAll('.item-check, #selectAll').forEach(c => c.checked = false);
+      updateBulk();
+    }
+
+    // MODAL
+    function openModal() {
+      document.getElementById('modalOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    function closeModalOutside(e) {
+      if (e.target === document.getElementById('modalOverlay')) closeModal();
+    }
+    function submitNewItem(e) {
+      e.preventDefault();
+      closeModal();
+      // prototype: just close the modal
+    }
+
+    // Init
+    renderRows(inventoryData);
+  </script>
+</body>
+</html>

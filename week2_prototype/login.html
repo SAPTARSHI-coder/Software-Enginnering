@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockMate — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold-1: #D49B37; --gold-2: #E5AC46; --gold-3: #F8DA96; --gold-4: #F3C367;
+      --gold-dim: #B27D1B; --red-1: #992B15; --red-2: #B83A1B; --red-3: #D84D29;
+      --bg: #0A0D12; --card-1: #10151E; --card-2: #151C27; --card-3: #1D2635;
+      --text-white: #FCFAF7; --text-light: #9CA3AF; --text-muted: #6B7280;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--text-white); min-height: 100vh; overflow-x: hidden; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--gold-1); border-radius: 99px; }
+    .dot-bg { background-color: var(--bg); background-image: radial-gradient(rgba(212,155,55,0.08) 1px, transparent 0); background-size: 24px 24px; }
+    .proto-banner { background: linear-gradient(90deg, rgba(153,43,21,0.9) 0%, rgba(180,120,20,0.9) 50%, rgba(153,43,21,0.9) 100%); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(212,155,55,0.3); font-size: 0.78rem; letter-spacing: 0.03em; }
+    @keyframes glowPulse { 0%,100%{opacity:.45;transform:scale(1);}50%{opacity:.75;transform:scale(1.08);} }
+    .glow-orb { position:absolute; border-radius:50%; filter:blur(80px); animation:glowPulse 4s ease-in-out infinite; pointer-events:none; }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);} }
+    .fade-in-up { animation:fadeInUp 0.65s ease both; }
+    .fade-in-up-delay { animation:fadeInUp 0.65s ease 0.15s both; }
+    .glass-card { background:rgba(16,21,30,0.88); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(212,155,55,0.22); border-radius:20px; }
+    .form-input { width:100%; background:rgba(21,28,39,0.9); border:1px solid rgba(212,155,55,0.2); border-radius:10px; padding:0.75rem 1rem 0.75rem 2.8rem; color:var(--text-white); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.9rem; outline:none; transition:border-color 0.25s,box-shadow 0.25s; }
+    .form-input::placeholder { color:var(--text-muted); }
+    .form-input:focus { border-color:var(--gold-1); box-shadow:0 0 0 3px rgba(212,155,55,0.14); }
+    .btn-gold { background:linear-gradient(135deg,var(--gold-1) 0%,var(--gold-dim) 100%); color:#0A0D12; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:0.95rem; border:none; border-radius:12px; padding:0.85rem 1.5rem; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s,opacity 0.2s; letter-spacing:0.04em; }
+    .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(212,155,55,0.38); opacity:0.93; }
+    .btn-gold:active { transform:translateY(0); }
+    .gold-check { accent-color:var(--gold-1); width:15px; height:15px; cursor:pointer; }
+    .version-badge { background:rgba(212,155,55,0.12); border:1px solid rgba(212,155,55,0.28); color:var(--gold-4); font-size:0.7rem; padding:2px 10px; border-radius:99px; font-weight:600; letter-spacing:0.06em; }
+    .proto-pill { background:rgba(212,155,55,0.15); border:1px solid rgba(212,155,55,0.35); color:var(--gold-3); font-size:0.68rem; font-weight:700; padding:3px 12px; border-radius:99px; letter-spacing:0.08em; text-transform:uppercase; }
+    .divider { height:1px; background:rgba(212,155,55,0.15); border:none; }
+    .forgot-link { color:var(--gold-2); font-size:0.82rem; text-decoration:none; transition:color 0.2s; }
+    .forgot-link:hover { color:var(--gold-3); text-decoration:underline; }
+    .input-icon { position:absolute; left:0.85rem; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.95rem; pointer-events:none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .animate-spin { animation: spin 0.8s linear infinite; }
+  </style>
+</head>
+<body class="dot-bg">
+  <!-- PROTOTYPE BANNER -->
+  <div class="proto-banner" style="position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 16px;text-align:center;">
+    <span style="font-size:0.85rem;">⚠️</span>
+    <span style="color:#F8DA96;font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;">
+      This is a <strong>Throwaway Prototype</strong> — UI demonstration only. No real data or backend.
+    </span>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div style="position:relative;display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 36px);padding:48px 16px;">
+    <!-- Glow orbs -->
+    <div class="glow-orb" style="width:480px;height:480px;background:rgba(212,155,55,0.12);top:-80px;left:-120px;animation-delay:0s;"></div>
+    <div class="glow-orb" style="width:360px;height:360px;background:rgba(184,58,27,0.10);bottom:-60px;right:-80px;animation-delay:2s;"></div>
+    <div class="glow-orb" style="width:280px;height:280px;background:rgba(212,155,55,0.08);top:40%;left:60%;animation-delay:1s;"></div>
+
+    <!-- LOGIN CARD -->
+    <div class="glass-card fade-in-up" style="position:relative;z-index:10;width:100%;max-width:440px;padding:40px;box-shadow:0 32px 80px rgba(0,0,0,0.6),0 0 60px rgba(212,155,55,0.06);">
+
+      <!-- Logo -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:28px;">
+        <div style="display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#D49B37,#B27D1B);box-shadow:0 8px 24px rgba(212,155,55,0.35);margin-bottom:4px;">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#0A0D12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <h1 style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:800;color:#FCFAF7;letter-spacing:-0.01em;line-height:1.1;">StockMate</h1>
+        <p style="color:#9CA3AF;font-size:0.82rem;text-align:center;letter-spacing:0.02em;">Stock Maintenance System — Throwaway Prototype</p>
+        <span class="proto-pill">Prototype Notice</span>
+      </div>
+
+      <hr class="divider" style="margin-bottom:28px;" />
+
+      <!-- FORM -->
+      <form onsubmit="handleLogin(event)" autocomplete="off" class="fade-in-up-delay">
+        <!-- Username -->
+        <div style="margin-bottom:16px;">
+          <label style="font-size:0.78rem;font-weight:600;color:#9CA3AF;letter-spacing:0.05em;display:block;margin-bottom:6px;">USERNAME</label>
+          <div style="position:relative;">
+            <span class="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <input type="text" class="form-input" placeholder="Enter your username" value="admin" required />
+          </div>
+        </div>
+        <!-- Password -->
+        <div style="margin-bottom:20px;">
+          <label style="font-size:0.78rem;font-weight:600;color:#9CA3AF;letter-spacing:0.05em;display:block;margin-bottom:6px;">PASSWORD</label>
+          <div style="position:relative;">
+            <span class="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input type="password" class="form-input" placeholder="Enter your password" value="••••••••" required />
+          </div>
+        </div>
+        <!-- Remember + Forgot -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.83rem;color:#9CA3AF;">
+            <input type="checkbox" class="gold-check" checked />
+            Remember me
+          </label>
+          <a href="#" class="forgot-link">Forgot Password?</a>
+        </div>
+        <!-- Login Button -->
+        <button type="submit" id="loginBtn" class="btn-gold" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Login to StockMate
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div style="margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <hr class="divider" style="width:100%;" />
+        <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+          <span class="version-badge">v2.0.0-proto</span>
+          <span style="color:#6B7280;font-size:0.75rem;">Week 2 — Rapid Throwaway Prototype</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      btn.innerHTML = '<svg class="animate-spin" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Signing in…';
+      btn.disabled = true;
+      btn.style.opacity = '0.8';
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1300);
+    }
+  </script>
+</body>
+</html>

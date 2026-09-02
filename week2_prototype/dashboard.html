@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockMate — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold-1: #D49B37; --gold-2: #E5AC46; --gold-3: #F8DA96; --gold-4: #F3C367;
+      --gold-dim: #B27D1B; --red-1: #992B15; --red-2: #B83A1B; --red-3: #D84D29;
+      --bg: #0A0D12; --card-1: #10151E; --card-2: #151C27; --card-3: #1D2635;
+      --text-white: #FCFAF7; --text-light: #9CA3AF; --text-muted: #6B7280;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--text-white); min-height: 100vh; overflow-x: hidden; display: flex; flex-direction: column; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--gold-1); border-radius: 99px; }
+    .dot-bg { background-color: var(--bg); background-image: radial-gradient(rgba(212,155,55,0.06) 1px, transparent 0); background-size: 24px 24px; }
+    .proto-banner { background: linear-gradient(90deg, rgba(153,43,21,0.9) 0%, rgba(180,120,20,0.9) 50%, rgba(153,43,21,0.9) 100%); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(212,155,55,0.3); font-size: 0.78rem; letter-spacing: 0.03em; }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
+    .fade-in { animation: fadeInUp 0.5s ease both; }
+    .glass-card { background: rgba(16,21,30,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(212,155,55,0.2); border-radius: 16px; }
+    /* SIDEBAR */
+    .sidebar { width: 260px; min-height: calc(100vh - 36px); background: var(--card-1); border-right: 1px solid rgba(212,155,55,0.15); display: flex; flex-direction: column; position: sticky; top: 36px; height: calc(100vh - 36px); overflow-y: auto; flex-shrink: 0; }
+    .nav-link { display: flex; align-items: center; gap: 11px; padding: 10px 16px; border-radius: 10px; margin: 2px 8px; font-size: 0.88rem; font-weight: 500; color: var(--text-light); text-decoration: none; transition: all 0.2s; cursor: pointer; }
+    .nav-link:hover { background: rgba(212,155,55,0.1); color: var(--gold-3); }
+    .nav-link.active { background: linear-gradient(135deg, rgba(212,155,55,0.22), rgba(212,155,55,0.1)); color: var(--gold-2); font-weight: 700; border: 1px solid rgba(212,155,55,0.25); }
+    /* BUTTONS */
+    .btn-gold { background: linear-gradient(135deg, var(--gold-1) 0%, var(--gold-dim) 100%); color: #0A0D12; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.85rem; border: none; border-radius: 12px; padding: 0.6rem 1.2rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; letter-spacing: 0.03em; }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,155,55,0.35); }
+    .btn-sm { background: rgba(21,28,39,0.9); border: 1px solid rgba(212,155,55,0.25); color: var(--gold-2); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.78rem; font-weight: 600; padding: 5px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+    .btn-sm:hover { background: rgba(212,155,55,0.12); }
+    /* KPI CARDS */
+    .kpi-card { background: rgba(16,21,30,0.85); backdrop-filter: blur(16px); border: 1px solid rgba(212,155,55,0.2); border-radius: 16px; padding: 22px; transition: transform 0.2s, box-shadow 0.2s; }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 20px rgba(212,155,55,0.08); }
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; padding: 10px 14px; border-bottom: 1px solid rgba(212,155,55,0.12); text-align: left; }
+    td { padding: 12px 14px; font-size: 0.85rem; color: var(--text-light); border-bottom: 1px solid rgba(255,255,255,0.04); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(212,155,55,0.04); }
+    /* STATUS BADGES */
+    .badge-in { background: #0E1C15; color: #34D399; border: 1px solid rgba(52,211,153,0.3); font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 99px; letter-spacing: 0.05em; }
+    .badge-out { background: #1C0A0A; color: #F87171; border: 1px solid rgba(248,113,113,0.3); font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 99px; letter-spacing: 0.05em; }
+    .badge-adj { background: #1E190E; color: #FBBF24; border: 1px solid rgba(251,191,36,0.3); font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 99px; letter-spacing: 0.05em; }
+    /* PROGRESS BAR */
+    .progress-track { background: rgba(255,255,255,0.07); border-radius: 99px; height: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 99px; transition: width 0.8s ease; }
+    /* SEARCH INPUT */
+    .search-input { background: rgba(21,28,39,0.9); border: 1px solid rgba(212,155,55,0.18); border-radius: 10px; padding: 0.55rem 0.9rem 0.55rem 2.4rem; color: var(--text-white); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.85rem; outline: none; transition: border-color 0.25s; width: 260px; }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus { border-color: var(--gold-1); }
+    /* FAB */
+    .fab { position: fixed; bottom: 28px; right: 28px; z-index: 100; background: linear-gradient(135deg, var(--gold-1), var(--gold-dim)); color: #0A0D12; border: none; border-radius: 16px; padding: 14px 22px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 8px 28px rgba(212,155,55,0.45); transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; gap: 8px; }
+    .fab:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 36px rgba(212,155,55,0.55); }
+    /* AVATAR */
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--gold-1), var(--gold-dim)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; color: #0A0D12; flex-shrink: 0; }
+    /* NOTIFICATION BELL */
+    .notif-btn { background: rgba(21,28,39,0.9); border: 1px solid rgba(212,155,55,0.2); border-radius: 10px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: background 0.2s; }
+    .notif-btn:hover { background: rgba(212,155,55,0.12); }
+    .notif-dot { position: absolute; top: 7px; right: 7px; width: 8px; height: 8px; background: #D84D29; border-radius: 50%; border: 1.5px solid var(--bg); }
+    /* VERSION BADGE */
+    .version-badge { background: rgba(212,155,55,0.12); border: 1px solid rgba(212,155,55,0.25); color: var(--gold-4); font-size: 0.67rem; padding: 2px 8px; border-radius: 99px; font-weight: 600; letter-spacing: 0.06em; }
+  </style>
+</head>
+<body class="dot-bg">
+  <!-- PROTOTYPE BANNER -->
+  <div class="proto-banner" style="position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:center;gap:8px;padding:7px 16px;text-align:center;">
+    <span>⚠️</span>
+    <span style="color:#F8DA96;font-weight:500;">This is a <strong>Throwaway Prototype</strong> — UI demonstration only. No real data or backend.</span>
+  </div>
+
+  <!-- APP SHELL -->
+  <div style="display:flex;flex:1;">
+
+    <!-- ══════════════ SIDEBAR ══════════════ -->
+    <aside class="sidebar">
+      <!-- Logo -->
+      <div style="padding:20px 20px 14px;border-bottom:1px solid rgba(212,155,55,0.12);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#D49B37,#B27D1B);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A0D12" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:800;color:#FCFAF7;">StockMate</div>
+            <div style="font-size:0.65rem;color:#6B7280;letter-spacing:0.05em;">STOCK MAINTENANCE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nav -->
+      <nav style="flex:1;padding:12px 0;">
+        <div style="padding:0 12px 8px;font-size:0.65rem;color:#6B7280;letter-spacing:0.09em;font-weight:700;text-transform:uppercase;">Main Menu</div>
+        <a class="nav-link active" href="dashboard.html">📊 &nbsp;Dashboard</a>
+        <a class="nav-link" href="inventory.html">📦 &nbsp;Inventory</a>
+        <a class="nav-link" href="#">🚚 &nbsp;Suppliers</a>
+        <a class="nav-link" href="#">📋 &nbsp;Purchase Orders</a>
+        <a class="nav-link" href="#">📈 &nbsp;Reports</a>
+        <a class="nav-link" href="#" style="color:#F87171;border:none;" onmouseover="this.style.color='#F87171'" onmouseout="this.style.color='#F87171'">⚠️ &nbsp;Low Stock Alerts <span style="background:#992B15;color:#fff;font-size:0.65rem;padding:2px 7px;border-radius:99px;margin-left:auto;">23</span></a>
+        <a class="nav-link" href="#">⚙️ &nbsp;Settings</a>
+      </nav>
+
+      <!-- User Profile -->
+      <div style="padding:14px 16px;border-top:1px solid rgba(212,155,55,0.12);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar">A</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.85rem;font-weight:600;color:#FCFAF7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Admin User</div>
+            <div style="font-size:0.72rem;color:#6B7280;">System Administrator</div>
+          </div>
+          <div style="width:8px;height:8px;background:#34D399;border-radius:50%;flex-shrink:0;"></div>
+        </div>
+        <div style="margin-top:10px;text-align:center;">
+          <span class="version-badge">v2.0.0-proto</span>
+          <div style="font-size:0.65rem;color:#6B7280;margin-top:4px;">Week 2 — Rapid Prototype</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ══════════════ MAIN CONTENT ══════════════ -->
+    <main style="flex:1;overflow-y:auto;padding-bottom:80px;">
+
+      <!-- TOP HEADER BAR -->
+      <header style="position:sticky;top:0;z-index:100;background:rgba(10,13,18,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(212,155,55,0.12);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <h2 style="font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;color:#FCFAF7;">Good Morning, Admin 👋</h2>
+          <p style="font-size:0.78rem;color:#6B7280;margin-top:1px;">Wednesday, 2 September 2026 — Overview</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="position:relative;">
+            <span style="position:absolute;left:0.7rem;top:50%;transform:translateY(-50%);color:#6B7280;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" class="search-input" placeholder="Search inventory…" />
+          </div>
+          <button class="notif-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D49B37" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-dot"></span>
+          </button>
+        </div>
+      </header>
+
+      <div style="padding:28px;">
+
+        <!-- KPI STAT CARDS -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:28px;" class="fade-in">
+
+          <!-- Card 1 -->
+          <div class="kpi-card">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+              <div style="font-size:1.7rem;">📦</div>
+              <span style="background:rgba(52,211,153,0.12);color:#34D399;font-size:0.68rem;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid rgba(52,211,153,0.25);">↑ +12</span>
+            </div>
+            <div style="font-size:1.9rem;font-weight:800;color:#FCFAF7;font-family:'Playfair Display',serif;line-height:1.1;">1,247</div>
+            <div style="font-size:0.82rem;color:#9CA3AF;margin-top:4px;font-weight:600;">Total Stock Items</div>
+            <div style="font-size:0.72rem;color:#34D399;margin-top:6px;">↑ 12 added this week</div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="kpi-card" style="border-color:rgba(248,113,113,0.25);">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+              <div style="font-size:1.7rem;">⚠️</div>
+              <span style="background:rgba(248,113,113,0.12);color:#F87171;font-size:0.68rem;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid rgba(248,113,113,0.25);">5 critical</span>
+            </div>
+            <div style="font-size:1.9rem;font-weight:800;color:#F87171;font-family:'Playfair Display',serif;line-height:1.1;">23</div>
+            <div style="font-size:0.82rem;color:#9CA3AF;margin-top:4px;font-weight:600;">Low Stock Alerts</div>
+            <div style="font-size:0.72rem;color:#F87171;margin-top:6px;">⚠ 5 items critically low</div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="kpi-card" style="border-color:rgba(212,155,55,0.35);">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+              <div style="font-size:1.7rem;">💰</div>
+              <span style="background:rgba(212,155,55,0.12);color:#F3C367;font-size:0.68rem;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid rgba(212,155,55,0.3);">This month</span>
+            </div>
+            <div style="font-size:1.9rem;font-weight:800;color:#F3C367;font-family:'Playfair Display',serif;line-height:1.1;">₹4,82,500</div>
+            <div style="font-size:0.82rem;color:#9CA3AF;margin-top:4px;font-weight:600;">Inventory Value</div>
+            <div style="font-size:0.72rem;color:#E5AC46;margin-top:6px;">↑ ₹18,200 from last month</div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="kpi-card" style="border-color:rgba(251,146,60,0.3);">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+              <div style="font-size:1.7rem;">📋</div>
+              <span style="background:rgba(251,146,60,0.12);color:#FB923C;font-size:0.68rem;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid rgba(251,146,60,0.3);">3 urgent</span>
+            </div>
+            <div style="font-size:1.9rem;font-weight:800;color:#FB923C;font-family:'Playfair Display',serif;line-height:1.1;">8</div>
+            <div style="font-size:0.82rem;color:#9CA3AF;margin-top:4px;font-weight:600;">Pending Orders</div>
+            <div style="font-size:0.72rem;color:#FB923C;margin-top:6px;">⚡ 3 marked urgent</div>
+          </div>
+        </div>
+
+        <!-- TWO COLUMN LAYOUT -->
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:22px;margin-bottom:28px;">
+
+          <!-- RECENT STOCK MOVEMENTS TABLE -->
+          <div class="glass-card" style="overflow:hidden;">
+            <div style="padding:18px 22px 14px;border-bottom:1px solid rgba(212,155,55,0.12);display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <h3 style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:#FCFAF7;">Recent Stock Movements</h3>
+                <p style="font-size:0.75rem;color:#6B7280;margin-top:2px;">Last 24 hours activity</p>
+              </div>
+              <button class="btn-sm">View All</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date / Time</th>
+                    <th>Item</th>
+                    <th>Action</th>
+                    <th>Qty</th>
+                    <th>Updated By</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td style="color:#6B7280;font-size:0.78rem;">Today 09:42</td><td style="color:#FCFAF7;font-weight:500;">Wireless Mouse A400</td><td>Stock IN</td><td style="color:#34D399;font-weight:600;">+50</td><td>Riya S.</td><td><span class="badge-in">IN</span></td></tr>
+                  <tr><td style="color:#6B7280;font-size:0.78rem;">Today 09:15</td><td style="color:#FCFAF7;font-weight:500;">USB Hub 7-Port</td><td>Stock OUT</td><td style="color:#F87171;font-weight:600;">−12</td><td>Admin</td><td><span class="badge-out">OUT</span></td></tr>
+                  <tr><td style="color:#6B7280;font-size:0.78rem;">Today 08:55</td><td style="color:#FCFAF7;font-weight:500;">Laptop Stand Pro</td><td>Adjusted</td><td style="color:#FBBF24;font-weight:600;">±3</td><td>Karan M.</td><td><span class="badge-adj">ADJUSTED</span></td></tr>
+                  <tr><td style="color:#6B7280;font-size:0.78rem;">Yesterday 17:30</td><td style="color:#FCFAF7;font-weight:500;">A4 Paper Ream</td><td>Stock IN</td><td style="color:#34D399;font-weight:600;">+200</td><td>Priya K.</td><td><span class="badge-in">IN</span></td></tr>
+                  <tr><td style="color:#6B7280;font-size:0.78rem;">Yesterday 15:20</td><td style="color:#FCFAF7;font-weight:500;">Printer Ink Cartridge</td><td>Stock OUT</td><td style="color:#F87171;font-weight:600;">−5</td><td>Admin</td><td><span class="badge-out">OUT</span></td></tr>
+                  <tr><td style="color:#6B7280;font-size:0.78rem;">Yesterday 14:05</td><td style="color:#FCFAF7;font-weight:500;">HDMI Cable 2m</td><td>Stock OUT</td><td style="color:#F87171;font-weight:600;">−20</td><td>Riya S.</td><td><span class="badge-out">OUT</span></td></tr>
+                  <tr><td style="color:#6B7280;font-size:0.78rem;">Yesterday 11:40</td><td style="color:#FCFAF7;font-weight:500;">Whiteboard Markers</td><td>Adjusted</td><td style="color:#FBBF24;font-weight:600;">−2</td><td>Karan M.</td><td><span class="badge-adj">ADJUSTED</span></td></tr>
+                  <tr><td style="color:#6B7280;font-size:0.78rem;">Yesterday 09:10</td><td style="color:#FCFAF7;font-weight:500;">Desk Lamp LED</td><td>Stock IN</td><td style="color:#34D399;font-weight:600;">+30</td><td>Admin</td><td><span class="badge-in">IN</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- CRITICAL ALERTS CARD -->
+          <div class="glass-card" style="padding:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+              <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#FCFAF7;">⚠️ Critical Alerts</h3>
+              <span style="background:rgba(216,77,41,0.18);color:#D84D29;font-size:0.68rem;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid rgba(216,77,41,0.3);">5 items</span>
+            </div>
+
+            <!-- Alert items -->
+            <div style="display:flex;flex-direction:column;gap:16px;">
+
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                  <span style="font-size:0.82rem;font-weight:600;color:#FCFAF7;">Printer Ink Cartridge</span>
+                  <button class="btn-sm" style="font-size:0.7rem;padding:3px 9px;">Reorder</button>
+                </div>
+                <div style="font-size:0.72rem;color:#F87171;margin-bottom:5px;">3 / 15 units — critically low</div>
+                <div class="progress-track"><div class="progress-fill" style="width:20%;background:linear-gradient(90deg,#D84D29,#F87171);"></div></div>
+              </div>
+
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                  <span style="font-size:0.82rem;font-weight:600;color:#FCFAF7;">Ballpoint Pens (Box)</span>
+                  <button class="btn-sm" style="font-size:0.7rem;padding:3px 9px;">Reorder</button>
+                </div>
+                <div style="font-size:0.72rem;color:#FBBF24;margin-bottom:5px;">8 / 25 units — low stock</div>
+                <div class="progress-track"><div class="progress-fill" style="width:32%;background:linear-gradient(90deg,#B27D1B,#F3C367);"></div></div>
+              </div>
+
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                  <span style="font-size:0.82rem;font-weight:600;color:#FCFAF7;">USB Hub 7-Port</span>
+                  <button class="btn-sm" style="font-size:0.7rem;padding:3px 9px;">Reorder</button>
+                </div>
+                <div style="font-size:0.72rem;color:#F87171;margin-bottom:5px;">0 / 10 units — out of stock</div>
+                <div class="progress-track"><div class="progress-fill" style="width:0%;background:linear-gradient(90deg,#D84D29,#F87171);"></div></div>
+              </div>
+
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                  <span style="font-size:0.82rem;font-weight:600;color:#FCFAF7;">Whiteboard Markers</span>
+                  <button class="btn-sm" style="font-size:0.7rem;padding:3px 9px;">Reorder</button>
+                </div>
+                <div style="font-size:0.72rem;color:#FBBF24;margin-bottom:5px;">6 / 20 boxes — low stock</div>
+                <div class="progress-track"><div class="progress-fill" style="width:30%;background:linear-gradient(90deg,#B27D1B,#F3C367);"></div></div>
+              </div>
+
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                  <span style="font-size:0.82rem;font-weight:600;color:#FCFAF7;">Hand Sanitizer 500ml</span>
+                  <button class="btn-sm" style="font-size:0.7rem;padding:3px 9px;">Reorder</button>
+                </div>
+                <div style="font-size:0.72rem;color:#FBBF24;margin-bottom:5px;">18 / 30 bottles — low stock</div>
+                <div class="progress-track"><div class="progress-fill" style="width:60%;background:linear-gradient(90deg,#B27D1B,#F3C367);"></div></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div style="text-align:center;padding-top:8px;border-top:1px solid rgba(212,155,55,0.1);">
+          <span style="font-size:0.72rem;color:#6B7280;">Week 2 — Rapid Throwaway Prototype &nbsp;|&nbsp; StockMate v2.0.0-proto &nbsp;|&nbsp; UI Demo Only</span>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- FLOATING ADD BUTTON -->
+  <button class="fab" onclick="window.location.href='inventory.html'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Add Stock Entry
+  </button>
+</body>
+</html>

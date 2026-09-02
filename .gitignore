@@ -1,0 +1,23 @@
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Next.js build output
+week4_evolutionary_prototype/.next/
+week4_evolutionary_prototype/out/
+
+# Chrome profile (temp)
+scratch_chrome_profile/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Screenshots (temp)
+*.png
+
+# Env files
+.env*
