@@ -29,11 +29,9 @@ Every week has its own dedicated, self-contained directory with its respective d
 │   ├── tsconfig.json                         # Strict TypeScript configuration
 │   └── README.md                             # Architecture & setup instructions
 │
-├── week5_cocomo_model/                 # [WEEK 5 — DOCUMENT]
-│   ├── Week5_COCOMO_Model.docx               # Barry Boehm's COCOMO Model Report (7,225 LOC Calibrated)
-│   └── README.md                             # Mathematical derivations summary
-│
-└── scripts/                            # Document Generation Engines & Utilities
+└── week5_cocomo_model/                 # [WEEK 5 — DOCUMENT]
+    ├── Week5_COCOMO_Model.docx               # Barry Boehm's COCOMO Model Report (7,225 LOC Calibrated)
+    └── README.md                             # Mathematical derivations summary
 ```
 
 ---
